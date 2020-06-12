@@ -1,25 +1,27 @@
 package com.gregdake.minecraft.bomb.entities;
 
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.monster.BlazeEntity;
 import net.minecraft.entity.projectile.ProjectileItemEntity;
-import net.minecraft.entity.projectile.SnowballEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.particles.IParticleData;
 import net.minecraft.particles.ItemParticleData;
 import net.minecraft.particles.ParticleTypes;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.EntityRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class BombEntity extends ProjectileItemEntity {
+
+    private static final Logger LOGGER = LogManager.getLogger();
+
+
     public BombEntity(EntityType<? extends BombEntity> p_i50159_1_, World p_i50159_2_) {
         super(p_i50159_1_, p_i50159_2_);
     }
@@ -61,14 +63,14 @@ public class BombEntity extends ProjectileItemEntity {
      * Called when this EntityThrowable hits a block or entity.
      */
     protected void onImpact(RayTraceResult result) {
-        if (result.getType() == RayTraceResult.Type.ENTITY) {
-            Entity entity = ((EntityRayTraceResult) result).getEntity();
-            int i = entity instanceof BlazeEntity ? 3 : 0;
-            entity.attackEntityFrom(DamageSource.causeThrownDamage(this, this.getThrower()), (float) i);
-        }
+
+        LOGGER.info("A bomb landed");
 
         if (!this.world.isRemote) {
             this.world.setEntityState(this, (byte) 3);
+
+            this.world.createExplosion(this, this.getPosX(), this.getPosYHeight(0.0625D), this.getPosZ(), 4.0F, Explosion.Mode.BREAK);
+
             this.remove();
         }
 
